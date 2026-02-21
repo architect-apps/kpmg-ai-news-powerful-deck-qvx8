@@ -1,0 +1,83 @@
+{
+  "workflow": "KPMG AI News Intelligence Digest",
+  "created_at": "2026-02-21T13:17:00Z",
+  "agents": {
+    "research_agent": {
+      "agent_id": "6999b00ab6bf78a0c22a59bb",
+      "name": "AI News Research Agent",
+      "type": "sub-agent",
+      "provider": "perplexity",
+      "model": "sonar-pro",
+      "role": "AI News Researcher",
+      "response_schema_file": "response_schemas/ai_news_research_agent_response.json"
+    },
+    "analyst_agent": {
+      "agent_id": "6999b00a264b5dcfd14cfa9c",
+      "name": "KPMG Strategic Analyst Agent",
+      "type": "sub-agent",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "role": "KPMG Strategic AI Analyst",
+      "response_schema_file": "response_schemas/kpmg_strategic_analyst_agent_response.json"
+    },
+    "manager_agent": {
+      "agent_id": "6999b01f7c1a227d082a458c",
+      "name": "AI News Intelligence Coordinator",
+      "type": "manager",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "role": "AI News Intelligence Manager",
+      "managed_agents": [
+        "6999b00ab6bf78a0c22a59bb",
+        "6999b00a264b5dcfd14cfa9c"
+      ],
+      "response_schema_file": "response_schemas/ai_news_intelligence_coordinator_response.json"
+    },
+    "digest_agent": {
+      "agent_id": "6999b044a8fd90224a4a08dc",
+      "name": "Daily Digest & Email Agent",
+      "type": "independent",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "role": "Executive Digest Writer & Email Deliverer",
+      "tools": ["GMAIL_SEND_EMAIL"],
+      "response_schema_file": "response_schemas/daily_digest_email_agent_response.json"
+    }
+  },
+  "schedules": {
+    "manager_schedule": {
+      "schedule_id": "6999b04d399dfadeac37ef67",
+      "agent_id": "6999b01f7c1a227d082a458c",
+      "agent_name": "AI News Intelligence Coordinator",
+      "cron_expression": "30 7 * * *",
+      "timezone": "Asia/Kolkata",
+      "description": "Daily at 7:30 AM IST - runs AI news scan and categorization",
+      "next_run": "2026-02-22T07:30:00+05:30",
+      "is_active": true,
+      "max_retries": 2,
+      "retry_delay": 300
+    },
+    "digest_schedule": {
+      "schedule_id": "6999b04e399dfadeac37ef68",
+      "agent_id": "6999b044a8fd90224a4a08dc",
+      "agent_name": "Daily Digest & Email Agent",
+      "cron_expression": "0 8 * * *",
+      "timezone": "Asia/Kolkata",
+      "description": "Daily at 8:00 AM IST - compiles and emails digest to siva@lyzr.ai",
+      "next_run": "2026-02-22T08:00:00+05:30",
+      "is_active": true,
+      "max_retries": 2,
+      "retry_delay": 300
+    }
+  },
+  "agent_ids": [
+    "6999b00ab6bf78a0c22a59bb",
+    "6999b00a264b5dcfd14cfa9c",
+    "6999b01f7c1a227d082a458c",
+    "6999b044a8fd90224a4a08dc"
+  ],
+  "schedule_ids": [
+    "6999b04d399dfadeac37ef67",
+    "6999b04e399dfadeac37ef68"
+  ]
+}

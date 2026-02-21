@@ -1,0 +1,34 @@
+{
+  "agent_name": "AI News Research Agent",
+  "agent_id": "6999b00ab6bf78a0c22a59bb",
+  "description": "Searches the web for the latest AI news from the past 24 hours, covering enterprise AI, regulations, model releases, industry adoption, and AI startups. Returns structured news items with titles, summaries, and sources.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "news_items": [
+      {
+        "title": "string",
+        "summary": "string",
+        "source": "string",
+        "source_url": "string",
+        "published_date": "string"
+      }
+    ],
+    "scan_timestamp": "string",
+    "total_items": "number"
+  },
+  "example_response": {
+    "news_items": [
+      {
+        "title": "sample string",
+        "summary": "sample string",
+        "source": "sample string",
+        "source_url": "sample string",
+        "published_date": "sample string"
+      }
+    ],
+    "scan_timestamp": "sample string",
+    "total_items": 0
+  }
+}

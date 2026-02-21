@@ -1,0 +1,78 @@
+{
+  "agent_name": "KPMG Strategic Analyst Agent",
+  "agent_id": "6999b00a264b5dcfd14cfa9c",
+  "description": "Represents KPMG's perspective as a Big Four firm. Evaluates each news item and categorizes into three tiers: Act On, Know About, and Ignore, with reasoning for each categorization.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "categorized_news": {
+      "act_on": [
+        {
+          "title": "string",
+          "summary": "string",
+          "source": "string",
+          "source_url": "string",
+          "reasoning": "string",
+          "recommended_action": "string"
+        }
+      ],
+      "know_about": [
+        {
+          "title": "string",
+          "summary": "string",
+          "source": "string",
+          "source_url": "string",
+          "reasoning": "string"
+        }
+      ],
+      "ignore": [
+        {
+          "title": "string",
+          "summary": "string",
+          "source": "string",
+          "source_url": "string",
+          "reasoning": "string"
+        }
+      ]
+    },
+    "analysis_timestamp": "string",
+    "executive_summary": "string",
+    "total_items_analyzed": "number"
+  },
+  "example_response": {
+    "categorized_news": {
+      "act_on": [
+        {
+          "title": "sample string",
+          "summary": "sample string",
+          "source": "sample string",
+          "source_url": "sample string",
+          "reasoning": "sample string",
+          "recommended_action": "sample string"
+        }
+      ],
+      "know_about": [
+        {
+          "title": "sample string",
+          "summary": "sample string",
+          "source": "sample string",
+          "source_url": "sample string",
+          "reasoning": "sample string"
+        }
+      ],
+      "ignore": [
+        {
+          "title": "sample string",
+          "summary": "sample string",
+          "source": "sample string",
+          "source_url": "sample string",
+          "reasoning": "sample string"
+        }
+      ]
+    },
+    "analysis_timestamp": "sample string",
+    "executive_summary": "sample string",
+    "total_items_analyzed": 0
+  }
+}

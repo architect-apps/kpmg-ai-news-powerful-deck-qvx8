@@ -1,0 +1,24 @@
+{
+  "agent_name": "Daily Digest & Email Agent",
+  "agent_id": "6999b044a8fd90224a4a08dc",
+  "description": "Takes the three-tier categorized news output, compiles a professionally written daily digest article with executive summary, Act On section with recommended actions, Know About section with concise briefs, and sends the formatted digest email to siva@lyzr.ai.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "digest_content": "string",
+    "email_status": "string",
+    "recipient": "string",
+    "subject_line": "string",
+    "items_included": "number",
+    "sent_timestamp": "string"
+  },
+  "example_response": {
+    "digest_content": "sample string",
+    "email_status": "sample string",
+    "recipient": "sample string",
+    "subject_line": "sample string",
+    "items_included": 0,
+    "sent_timestamp": "sample string"
+  }
+}

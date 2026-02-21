@@ -1,0 +1,78 @@
+{
+  "agent_name": "AI News Intelligence Coordinator",
+  "agent_id": "6999b01f7c1a227d082a458c",
+  "description": "Coordinates the news research and strategic categorization workflow. Routes fetched AI news to the analyst agent and aggregates the three-tier categorized output.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "categorized_news": {
+      "act_on": [
+        {
+          "title": "string",
+          "summary": "string",
+          "source": "string",
+          "source_url": "string",
+          "reasoning": "string",
+          "recommended_action": "string"
+        }
+      ],
+      "know_about": [
+        {
+          "title": "string",
+          "summary": "string",
+          "source": "string",
+          "source_url": "string",
+          "reasoning": "string"
+        }
+      ],
+      "ignore": [
+        {
+          "title": "string",
+          "summary": "string",
+          "source": "string",
+          "source_url": "string",
+          "reasoning": "string"
+        }
+      ]
+    },
+    "executive_summary": "string",
+    "scan_timestamp": "string",
+    "total_items": "number"
+  },
+  "example_response": {
+    "categorized_news": {
+      "act_on": [
+        {
+          "title": "sample string",
+          "summary": "sample string",
+          "source": "sample string",
+          "source_url": "sample string",
+          "reasoning": "sample string",
+          "recommended_action": "sample string"
+        }
+      ],
+      "know_about": [
+        {
+          "title": "sample string",
+          "summary": "sample string",
+          "source": "sample string",
+          "source_url": "sample string",
+          "reasoning": "sample string"
+        }
+      ],
+      "ignore": [
+        {
+          "title": "sample string",
+          "summary": "sample string",
+          "source": "sample string",
+          "source_url": "sample string",
+          "reasoning": "sample string"
+        }
+      ]
+    },
+    "executive_summary": "sample string",
+    "scan_timestamp": "sample string",
+    "total_items": 0
+  }
+}
