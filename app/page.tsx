@@ -597,9 +597,13 @@ export default function Page() {
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
   const [showSampleData, setShowSampleData] = useState(false)
   const [todayDate, setTodayDate] = useState('')
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const now = new Date()
-    return now.toISOString().split('T')[0] // YYYY-MM-DD
+  const [dateFrom, setDateFrom] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 1)
+    return d.toISOString().split('T')[0]
+  })
+  const [dateTo, setDateTo] = useState(() => {
+    return new Date().toISOString().split('T')[0]
   })
 
   // Initialize date on client side only
@@ -670,14 +674,15 @@ export default function Page() {
     setError(null)
     setActiveAgentId(MANAGER_AGENT_ID)
 
-    // Build date-aware prompt so the model searches for the correct date
-    const scanDate = new Date(selectedDate + 'T00:00:00')
-    const formattedScanDate = formatDateEditorial(scanDate)
-    const isoDate = selectedDate // YYYY-MM-DD
+    // Build date-range-aware prompt so the model searches for the correct period
+    const fromDate = new Date(dateFrom + 'T00:00:00')
+    const toDate = new Date(dateTo + 'T00:00:00')
+    const formattedFrom = formatDateEditorial(fromDate)
+    const formattedTo = formatDateEditorial(toDate)
 
     try {
       const result = await callAIAgent(
-        `Run the AI news intelligence scan for the date: ${formattedScanDate} (${isoDate}). Today's date is ${isoDate}. Search for the latest AI news published on or around ${formattedScanDate}. Do NOT use older dates from your training data — focus strictly on news from ${isoDate}. Categorize each item from KPMG's perspective into Act On, Know About, or Ignore tiers, and provide the complete categorized output with executive summary.`,
+        `Run the AI news intelligence scan for the date range: ${formattedFrom} (${dateFrom}) through ${formattedTo} (${dateTo}). Today's date is ${dateTo}. Search for AI news published between ${dateFrom} and ${dateTo}. Do NOT use older dates from your training data — focus strictly on news within this date range. Categorize each item from KPMG's perspective into Act On, Know About, or Ignore tiers, and provide the complete categorized output with executive summary.`,
         MANAGER_AGENT_ID
       )
 
@@ -693,7 +698,7 @@ export default function Page() {
             executive_summary: data?.executive_summary ?? '',
             scan_timestamp: data?.scan_timestamp ?? new Date().toISOString(),
             total_items: data?.total_items ?? 0,
-            date: formattedScanDate,
+            date: dateFrom === dateTo ? formattedTo : `${formattedFrom} — ${formattedTo}`,
           }
           setCurrentDigest(digest)
           setLastScanTime(digest.scan_timestamp)
@@ -712,7 +717,7 @@ export default function Page() {
 
     setActiveAgentId(null)
     setIsScanning(false)
-  }, [selectedDate])
+  }, [dateFrom, dateTo])
 
   // Send digest email
   const handleSendDigest = useCallback(async () => {
@@ -852,22 +857,42 @@ Please format this as a professional executive digest email and send it.`
 
               {/* Action bar */}
               <div className="flex flex-wrap items-center gap-4">
-                {/* Date Picker */}
-                <div className="flex items-center gap-2">
-                  <label htmlFor="scan-date" className="text-xs font-mono uppercase tracking-wider" style={{ color: 'hsl(0 0% 40%)' }}>
-                    Scan Date
-                  </label>
-                  <div className="relative">
-                    <FiCalendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'hsl(0 0% 40%)' }} />
+                {/* Date Range Picker */}
+                <div className="flex items-center gap-3 border p-2" style={{ borderColor: 'hsl(0 0% 80%)', background: 'hsl(0 0% 100%)' }}>
+                  <FiCalendar className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'hsl(0 0% 40%)' }} />
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="date-from" className="text-xs font-mono uppercase tracking-wider" style={{ color: 'hsl(0 0% 50%)' }}>
+                      From
+                    </label>
                     <input
-                      id="scan-date"
+                      id="date-from"
                       type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="pl-8 pr-3 py-2.5 text-sm font-mono border rounded-none appearance-none"
+                      value={dateFrom}
+                      max={dateTo}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="px-2 py-1.5 text-sm font-mono border rounded-none appearance-none"
                       style={{
-                        borderColor: 'hsl(0 0% 75%)',
-                        background: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(0 0% 85%)',
+                        background: 'hsl(0 0% 98%)',
+                        color: 'hsl(0 0% 8%)',
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs" style={{ color: 'hsl(0 0% 60%)' }}>—</span>
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor="date-to" className="text-xs font-mono uppercase tracking-wider" style={{ color: 'hsl(0 0% 50%)' }}>
+                      To
+                    </label>
+                    <input
+                      id="date-to"
+                      type="date"
+                      value={dateTo}
+                      min={dateFrom}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="px-2 py-1.5 text-sm font-mono border rounded-none appearance-none"
+                      style={{
+                        borderColor: 'hsl(0 0% 85%)',
+                        background: 'hsl(0 0% 98%)',
                         color: 'hsl(0 0% 8%)',
                       }}
                     />
