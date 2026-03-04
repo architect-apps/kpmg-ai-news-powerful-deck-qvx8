@@ -597,6 +597,10 @@ export default function Page() {
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
   const [showSampleData, setShowSampleData] = useState(false)
   const [todayDate, setTodayDate] = useState('')
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const now = new Date()
+    return now.toISOString().split('T')[0] // YYYY-MM-DD
+  })
 
   // Initialize date on client side only
   useEffect(() => {
@@ -666,16 +670,20 @@ export default function Page() {
     setError(null)
     setActiveAgentId(MANAGER_AGENT_ID)
 
+    // Build date-aware prompt so the model searches for the correct date
+    const scanDate = new Date(selectedDate + 'T00:00:00')
+    const formattedScanDate = formatDateEditorial(scanDate)
+    const isoDate = selectedDate // YYYY-MM-DD
+
     try {
       const result = await callAIAgent(
-        'Run the daily AI news intelligence scan. Search for the latest AI news from the past 24 hours, categorize each item from KPMG\'s perspective into Act On, Know About, or Ignore tiers, and provide the complete categorized output with executive summary.',
+        `Run the AI news intelligence scan for the date: ${formattedScanDate} (${isoDate}). Today's date is ${isoDate}. Search for the latest AI news published on or around ${formattedScanDate}. Do NOT use older dates from your training data — focus strictly on news from ${isoDate}. Categorize each item from KPMG's perspective into Act On, Know About, or Ignore tiers, and provide the complete categorized output with executive summary.`,
         MANAGER_AGENT_ID
       )
 
       if (result.success) {
         const data = parseAgentResult(result)
         if (data) {
-          const now = new Date()
           const digest: DigestData = {
             categorized_news: {
               act_on: Array.isArray(data?.categorized_news?.act_on) ? data.categorized_news.act_on : [],
@@ -683,9 +691,9 @@ export default function Page() {
               ignore: Array.isArray(data?.categorized_news?.ignore) ? data.categorized_news.ignore : [],
             },
             executive_summary: data?.executive_summary ?? '',
-            scan_timestamp: data?.scan_timestamp ?? now.toISOString(),
+            scan_timestamp: data?.scan_timestamp ?? new Date().toISOString(),
             total_items: data?.total_items ?? 0,
-            date: formatDateEditorial(now),
+            date: formattedScanDate,
           }
           setCurrentDigest(digest)
           setLastScanTime(digest.scan_timestamp)
@@ -704,7 +712,7 @@ export default function Page() {
 
     setActiveAgentId(null)
     setIsScanning(false)
-  }, [])
+  }, [selectedDate])
 
   // Send digest email
   const handleSendDigest = useCallback(async () => {
@@ -844,6 +852,28 @@ Please format this as a professional executive digest email and send it.`
 
               {/* Action bar */}
               <div className="flex flex-wrap items-center gap-4">
+                {/* Date Picker */}
+                <div className="flex items-center gap-2">
+                  <label htmlFor="scan-date" className="text-xs font-mono uppercase tracking-wider" style={{ color: 'hsl(0 0% 40%)' }}>
+                    Scan Date
+                  </label>
+                  <div className="relative">
+                    <FiCalendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" style={{ color: 'hsl(0 0% 40%)' }} />
+                    <input
+                      id="scan-date"
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="pl-8 pr-3 py-2.5 text-sm font-mono border rounded-none appearance-none"
+                      style={{
+                        borderColor: 'hsl(0 0% 75%)',
+                        background: 'hsl(0 0% 100%)',
+                        color: 'hsl(0 0% 8%)',
+                      }}
+                    />
+                  </div>
+                </div>
+
                 <button
                   onClick={handleRunNow}
                   disabled={isScanning}
