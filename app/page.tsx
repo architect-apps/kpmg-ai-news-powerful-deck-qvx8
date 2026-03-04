@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { callAIAgent } from '@/lib/aiAgent'
 import type { AIAgentResponse } from '@/lib/aiAgent'
-import { listSchedules, getScheduleLogs, pauseSchedule, resumeSchedule, cronToHuman } from '@/lib/scheduler'
-import type { Schedule, ExecutionLog } from '@/lib/scheduler'
-import { FiPlay, FiSend, FiClock, FiChevronDown, FiChevronRight, FiExternalLink, FiAlertCircle, FiInfo, FiMinusCircle, FiRefreshCw, FiCalendar, FiMail, FiCheck, FiX, FiPause, FiActivity } from 'react-icons/fi'
+import { FiPlay, FiSend, FiClock, FiChevronDown, FiChevronRight, FiExternalLink, FiAlertCircle, FiInfo, FiMinusCircle, FiRefreshCw, FiCalendar, FiMail, FiCheck, FiX, FiActivity } from 'react-icons/fi'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -13,9 +11,6 @@ import { FiPlay, FiSend, FiClock, FiChevronDown, FiChevronRight, FiExternalLink,
 
 const MANAGER_AGENT_ID = '6999b01f7c1a227d082a458c'
 const DIGEST_AGENT_ID = '6999b044a8fd90224a4a08dc'
-const MANAGER_SCHEDULE_ID = '6999b04d399dfadeac37ef67'
-const DIGEST_SCHEDULE_ID = '6999b04e399dfadeac37ef68'
-
 const AGENTS_INFO = [
   { id: '6999b00ab6bf78a0c22a59bb', name: 'AI News Research Agent', role: 'Searches for the latest AI news using Perplexity' },
   { id: '6999b00a264b5dcfd14cfa9c', name: 'KPMG Strategic Analyst Agent', role: 'Categorizes news from KPMG perspective' },
@@ -363,116 +358,6 @@ function CategorySection({
   )
 }
 
-function ScheduleCard({
-  schedule,
-  logs,
-  isTogglingId,
-  onToggle,
-  onFetchLogs,
-  logsExpanded,
-  onToggleLogs,
-}: {
-  schedule: Schedule
-  logs: ExecutionLog[]
-  isTogglingId: string | null
-  onToggle: (s: Schedule) => void
-  onFetchLogs: (id: string) => void
-  logsExpanded: boolean
-  onToggleLogs: () => void
-}) {
-  const isToggling = isTogglingId === schedule.id
-
-  const nameMap: Record<string, string> = {
-    [MANAGER_SCHEDULE_ID]: 'AI News Intelligence Coordinator',
-    [DIGEST_SCHEDULE_ID]: 'Daily Digest & Email Agent',
-  }
-
-  return (
-    <div className="border p-5" style={{ borderColor: 'hsl(0 0% 85%)', background: 'hsl(0 0% 100%)' }}>
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h4 className="font-serif font-bold text-sm tracking-tight" style={{ color: 'hsl(0 0% 8%)' }}>
-            {nameMap[schedule.id] ?? schedule.agent_id}
-          </h4>
-          <p className="text-xs font-mono mt-1" style={{ color: 'hsl(0 0% 40%)' }}>
-            {schedule?.cron_expression ? cronToHuman(schedule.cron_expression) : 'No schedule'}
-            {schedule?.timezone ? ` (${schedule.timezone})` : ''}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-mono px-2 py-0.5 border ${schedule.is_active ? '' : ''}`} style={{ borderColor: schedule.is_active ? 'hsl(140 60% 40%)' : 'hsl(0 0% 75%)', color: schedule.is_active ? 'hsl(140 60% 30%)' : 'hsl(0 0% 50%)', background: schedule.is_active ? 'hsl(140 60% 95%)' : 'hsl(0 0% 96%)' }}>
-            {schedule.is_active ? 'Active' : 'Paused'}
-          </span>
-          <button
-            onClick={() => onToggle(schedule)}
-            disabled={isToggling}
-            className="p-1.5 border transition-all duration-200 hover:opacity-70 disabled:opacity-40"
-            style={{ borderColor: 'hsl(0 0% 85%)' }}
-            title={schedule.is_active ? 'Pause Schedule' : 'Resume Schedule'}
-          >
-            {isToggling ? (
-              <FiRefreshCw className="w-3.5 h-3.5 animate-spin" style={{ color: 'hsl(0 0% 40%)' }} />
-            ) : schedule.is_active ? (
-              <FiPause className="w-3.5 h-3.5" style={{ color: 'hsl(0 0% 40%)' }} />
-            ) : (
-              <FiPlay className="w-3.5 h-3.5" style={{ color: 'hsl(0 0% 40%)' }} />
-            )}
-          </button>
-        </div>
-      </div>
-      <div className="flex items-center gap-4 text-xs" style={{ color: 'hsl(0 0% 50%)' }}>
-        <span className="flex items-center gap-1">
-          <FiClock className="w-3 h-3" />
-          Next: {schedule?.next_run_time ? formatTimestamp(schedule.next_run_time) : 'N/A'}
-        </span>
-        {schedule?.last_run_at && (
-          <span className="flex items-center gap-1">
-            <FiActivity className="w-3 h-3" />
-            Last: {formatTimestamp(schedule.last_run_at)}
-          </span>
-        )}
-      </div>
-
-      <div className="mt-3 border-t pt-3" style={{ borderColor: 'hsl(0 0% 92%)' }}>
-        <button
-          onClick={() => {
-            onToggleLogs()
-            if (!logsExpanded) onFetchLogs(schedule.id)
-          }}
-          className="text-xs flex items-center gap-1 hover:underline transition-all duration-200"
-          style={{ color: 'hsl(0 0% 40%)' }}
-        >
-          {logsExpanded ? <FiChevronDown className="w-3 h-3" /> : <FiChevronRight className="w-3 h-3" />}
-          Execution History
-        </button>
-        {logsExpanded && (
-          <div className="mt-2 space-y-1">
-            {Array.isArray(logs) && logs.length > 0 ? (
-              logs.slice(0, 5).map((log, i) => (
-                <div key={log?.id ?? i} className="flex items-center gap-2 text-xs py-1 border-b" style={{ borderColor: 'hsl(0 0% 95%)' }}>
-                  {log?.success ? (
-                    <FiCheck className="w-3 h-3" style={{ color: 'hsl(140 60% 40%)' }} />
-                  ) : (
-                    <FiX className="w-3 h-3" style={{ color: 'hsl(0 80% 45%)' }} />
-                  )}
-                  <span className="font-mono" style={{ color: 'hsl(0 0% 50%)' }}>
-                    {log?.executed_at ? formatTimestamp(log.executed_at) : 'N/A'}
-                  </span>
-                  {log?.error_message && (
-                    <span className="truncate" style={{ color: 'hsl(0 80% 45%)' }}>{log.error_message}</span>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="text-xs py-2 italic" style={{ color: 'hsl(0 0% 60%)' }}>No execution logs found.</p>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 function AgentStatusBar({ agents, activeAgentId }: { agents: typeof AGENTS_INFO; activeAgentId: string | null }) {
   return (
     <div className="border p-5 mt-8" style={{ borderColor: 'hsl(0 0% 85%)', background: 'hsl(0 0% 100%)' }}>
@@ -585,12 +470,6 @@ export default function Page() {
   const [ignoreExpanded, setIgnoreExpanded] = useState(false)
   const [expandedHistorical, setExpandedHistorical] = useState<Set<number>>(new Set())
 
-  // Schedule state
-  const [schedules, setSchedules] = useState<Schedule[]>([])
-  const [scheduleLogs, setScheduleLogs] = useState<Record<string, ExecutionLog[]>>({})
-  const [schedulesLoading, setSchedulesLoading] = useState(false)
-  const [isTogglingId, setIsTogglingId] = useState<string | null>(null)
-  const [expandedScheduleLogs, setExpandedScheduleLogs] = useState<Set<string>>(new Set())
 
   // UI state
   const [error, setError] = useState<string | null>(null)
@@ -618,55 +497,6 @@ export default function Page() {
       return () => clearTimeout(timer)
     }
   }, [error])
-
-  // Load schedules on mount
-  const loadSchedules = useCallback(async () => {
-    setSchedulesLoading(true)
-    try {
-      const result = await listSchedules()
-      if (result.success) {
-        const relevant = result.schedules.filter(
-          s => s.id === MANAGER_SCHEDULE_ID || s.id === DIGEST_SCHEDULE_ID
-        )
-        setSchedules(relevant.length > 0 ? relevant : result.schedules.slice(0, 4))
-      }
-    } catch (e) {
-      // Silently handle schedule fetch errors
-    }
-    setSchedulesLoading(false)
-  }, [])
-
-  useEffect(() => {
-    loadSchedules()
-  }, [loadSchedules])
-
-  // Fetch execution logs for a schedule
-  const fetchLogs = useCallback(async (scheduleId: string) => {
-    try {
-      const result = await getScheduleLogs(scheduleId, { limit: 5 })
-      if (result.success) {
-        setScheduleLogs(prev => ({ ...prev, [scheduleId]: result.executions }))
-      }
-    } catch {
-      // Silently handle
-    }
-  }, [])
-
-  // Toggle schedule pause/resume
-  const handleToggleSchedule = useCallback(async (schedule: Schedule) => {
-    setIsTogglingId(schedule.id)
-    try {
-      if (schedule.is_active) {
-        await pauseSchedule(schedule.id)
-      } else {
-        await resumeSchedule(schedule.id)
-      }
-      await loadSchedules()
-    } catch (e) {
-      setError('Failed to toggle schedule status.')
-    }
-    setIsTogglingId(null)
-  }, [loadSchedules])
 
   // Run the intelligence scan
   const handleRunNow = useCallback(async () => {
@@ -1010,61 +840,6 @@ Please format this as a professional executive digest email and send it.`
 
             {/* Email Status */}
             <EmailStatusSection emailResult={emailResult} digestContent={emailResult?.digest_content ?? null} />
-
-            {/* ---- SCHEDULE MANAGEMENT ---- */}
-            <section className="mt-12 mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-serif font-bold text-lg tracking-tight" style={{ color: 'hsl(0 0% 8%)', letterSpacing: '-0.02em' }}>
-                  Automated Schedules
-                </h2>
-                <button
-                  onClick={loadSchedules}
-                  disabled={schedulesLoading}
-                  className="text-xs flex items-center gap-1 hover:underline transition-all duration-200"
-                  style={{ color: 'hsl(0 0% 40%)' }}
-                >
-                  <FiRefreshCw className={`w-3 h-3 ${schedulesLoading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </button>
-              </div>
-              <div className="border-b mb-6" style={{ borderColor: 'hsl(0 0% 85%)' }} />
-
-              {schedulesLoading && schedules.length === 0 ? (
-                <div className="animate-pulse space-y-4">
-                  <div className="h-24 border" style={{ background: 'hsl(0 0% 96%)', borderColor: 'hsl(0 0% 90%)' }} />
-                  <div className="h-24 border" style={{ background: 'hsl(0 0% 96%)', borderColor: 'hsl(0 0% 90%)' }} />
-                </div>
-              ) : schedules.length > 0 ? (
-                <div className="space-y-4">
-                  {schedules.map(schedule => (
-                    <ScheduleCard
-                      key={schedule.id}
-                      schedule={schedule}
-                      logs={scheduleLogs[schedule.id] ?? []}
-                      isTogglingId={isTogglingId}
-                      onToggle={handleToggleSchedule}
-                      onFetchLogs={fetchLogs}
-                      logsExpanded={expandedScheduleLogs.has(schedule.id)}
-                      onToggleLogs={() => {
-                        setExpandedScheduleLogs(prev => {
-                          const next = new Set(prev)
-                          if (next.has(schedule.id)) {
-                            next.delete(schedule.id)
-                          } else {
-                            next.add(schedule.id)
-                          }
-                          return next
-                        })
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm italic py-4" style={{ color: 'hsl(0 0% 55%)' }}>
-                  No schedules found. Schedules are configured to run daily scans at 7:30 AM and 8:00 AM IST.
-                </p>
-              )}
-            </section>
 
             {/* ---- HISTORICAL DIGESTS ---- */}
             {historicalDigests.length > 1 && (
